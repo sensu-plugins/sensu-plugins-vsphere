@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
@@ -29,9 +27,8 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.test_files             = s.files.grep(%r{^(test|spec|features)/})
   s.version                = SensuPluginsVsphere::Version::VER_STRING
 
-  s.add_runtime_dependency 'sensu-plugin', '~> 1.2.0'
-
   s.add_runtime_dependency 'rbvmomi',      '~> 1.11.6'
+  s.add_runtime_dependency 'sensu-plugin', '~> 2.4.0'
 
   s.add_development_dependency 'bundler',                   '~> 1.7'
   s.add_development_dependency 'codeclimate-test-reporter', '~> 0.4'
