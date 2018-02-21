@@ -35,9 +35,10 @@ Gem::Specification.new do |s|
   s.signing_key            = File.expand_path(pvt_key) if $PROGRAM_NAME =~ /gem\z/
   s.summary                = 'Sensu plugins for mailer'
   s.test_files             = s.files.grep(%r{^(test|spec|features)/})
-  s.version                = SensuPluginsvsphere::Version::VER_STRING
+  s.version                = SensuPluginsVsphere::Version::VER_STRING
 
   s.add_runtime_dependency 'sensu-plugin',      '~> 1.2.0'
+  s.add_runtime_dependency 'rbvmomi',      '~> 1.11.6'
 
   s.add_development_dependency 'bundler',                   '~> 1.7'
   s.add_development_dependency 'codeclimate-test-reporter', '~> 0.4'
@@ -45,7 +46,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'pry',                       '~> 0.10'
   s.add_development_dependency 'rake',                      '~> 10.0'
   s.add_development_dependency 'redcarpet',                 '~> 3.2'
-  s.add_development_dependency 'rubocop',                   '0.32.1'
+  s.add_development_dependency 'rubocop',                   '>= 0.32.1'
   s.add_development_dependency 'rspec',                     '~> 3.1'
   s.add_development_dependency 'yard',                      '~> 0.8'
 end
