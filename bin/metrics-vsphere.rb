@@ -30,7 +30,7 @@ require 'rbvmomi'
 #
 # VSphere Graphite
 #
-class VsphereGraphite < Sensu::Plugin::Metric::CLI::Graphite
+class VsphereGraphite < Sensu::Plugin::Metric::CLI::Generic
   option :host,
          description: 'ESX or ESXi hostname',
          short: '-H HOST',
@@ -79,8 +79,8 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Graphite
 
   option :period,
          description: ' Sampling Period in seconds. Basic historic intervals: 300, 1800, 7200 or 86400. See config for any changes.',
-         short: '-p',
-         long: '--period',
+         short: '-r PERIOD',
+         long: '--period PERIOD',
          proc: proc(&:to_i),
          default: 300
 
@@ -90,6 +90,10 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Graphite
          long: '--scheme SCHEME',
          default: "#{Socket.gethostname}.vsphere"
 
+  option :find_resource,
+         description: 'Help to find resource and path to it',
+         long: '--find_resource NAME'
+
   def vim
     @vim ||= RbVmomi::VIM.connect(
       host: config[:host],
@@ -97,6 +101,37 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Graphite
       password: config[:password],
       insecure: config[:insecure]
     )
+  end
+
+  def build_tree_resources(datacenters)
+    result = {}
+    datacenters.grep(RbVmomi::VIM::Datacenter) do |datacenter|
+      result[datacenter] ||= {}
+      datacenter.hostFolder.children.grep(RbVmomi::VIM::ComputeResource) do |compute_resource|
+        result[datacenter][compute_resource] ||= {}
+        compute_resource.host.grep(RbVmomi::VIM::HostSystem) do |host_system|
+          result[datacenter][compute_resource][host_system] ||= {}
+          host_system.vm.grep(RbVmomi::VIM::VirtualMachine) do |virtual_machine|
+            result[datacenter][compute_resource][host_system][virtual_machine] = nil
+          end
+        end
+      end
+    end
+    result
+  end
+
+  def find_resource_by_name(resources, name, path = '')
+    result = []
+    resources.each do |key, value|
+      new_path = "#{path}=> #{key.name}"
+      if key.name == name
+        result << new_path
+      end
+
+      result += find_resource_by_name(value, name, new_path) if value
+    end
+
+    result
   end
 
   def find_or_take_first(resources, resource_name)
@@ -124,46 +159,59 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Graphite
 
   def run
     data_centers = vim.serviceInstance.content.rootFolder.childEntity.grep(RbVmomi::VIM::Datacenter)
-    dc = find_or_take_first(data_centers, config[:data_center])
 
-    pm = vim.serviceInstance.content.perfManager
-
-    compute_resources = dc.hostFolder.children.grep(RbVmomi::VIM::ComputeResource)
-    if config[:vm_name] || config[:host_name] || config[:compute_resource]
-      compute_resource = find_or_take_first(compute_resources, config[:compute_resource])
-    end
-    host = find_or_take_first(compute_resource.host, config[:host_name]) if config[:vm_name] || config[:host_name]
-
-    if config[:vm_name]
-      vms = host.vm.grep(RbVmomi::VIM::VirtualMachine)
-      resource = find_or_take_first(vms, config[:vm_name])
-    elsif config[:host_name]
-      resource = host
-    elsif config[:compute_resource] && compute_resource.is_a?(RbVmomi::VIM::ClusterComputeResource)
-      resource = compute_resource
-    else
-      resource = dc
-    end
-
-    regexp = Regexp.new("^#{config[:command_type]}")
-    stats_hash = {
-      multi_instance: true,
-      interval: config[:period],
-      start_time: (Time.now - config[:period])
-    }
-    metrics = pm.retrieve_stats([resource],
-                                [],
-                                stats_hash)
-
-    if metrics
-      filtered_metrics = metrics[resource][:metrics].select { |(metric, _), _| metric.to_s.match(regexp) && metric }
-      filtered_metrics.each do |(metric, instance), value|
-        output "#{config[:scheme]}.#{[instance, metric].flatten.reject { |e| e == '' }.join('.')}", value.first
+    if config[:find_resource]
+      result = find_resource_by_name(build_tree_resources(data_centers), config[:find_resource])
+      if result.empty?
+        puts 'Not found'
+      else
+        result.each do |line|
+          puts line
+        end
       end
-
       ok
     else
-      warning
+      dc = find_or_take_first(data_centers, config[:data_center])
+      pm = vim.serviceInstance.content.perfManager
+
+      compute_resources = dc.hostFolder.children.grep(RbVmomi::VIM::ComputeResource)
+      if config[:vm_name] || config[:host_name] || config[:compute_resource]
+        compute_resource = find_or_take_first(compute_resources, config[:compute_resource])
+      end
+      host = find_or_take_first(compute_resource.host, config[:host_name]) if config[:vm_name] || config[:host_name]
+
+      if config[:vm_name]
+        vms = host.vm.grep(RbVmomi::VIM::VirtualMachine)
+        resource = find_or_take_first(vms, config[:vm_name])
+      elsif config[:host_name]
+        resource = host
+      elsif config[:compute_resource] && compute_resource.is_a?(RbVmomi::VIM::ClusterComputeResource)
+        resource = compute_resource
+      else
+        resource = dc
+      end
+
+      regexp = Regexp.new("^#{config[:command_type]}")
+      metrics = pm.retrieve_stats([resource],
+                                  [],
+                                  multi_instance: true, interval: config[:period],
+                                  start_time: (Time.now - config[:period] * 10))
+
+      if metrics
+        timestamp = metrics[resource][:sampleInfo].first[:timestamp].to_i
+        filtered_metrics = metrics[resource][:metrics].select { |(metric, _), _| metric.to_s.match(regexp) && metric }
+        filtered_metrics.each do |(metric, instance), value|
+          output(
+            metric_name: "#{config[:scheme]}.#{[instance, metric].flatten.reject { |e| e == '' }.join('.')}",
+            value: value.first,
+            timestamp: timestamp
+          )
+        end
+
+        ok
+      else
+        warning
+      end
     end
   end
 end
