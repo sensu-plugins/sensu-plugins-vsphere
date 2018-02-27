@@ -5,6 +5,7 @@ This CHANGELOG follows the format listed [here](https://github.com/sensu-plugins
 
 ## Unreleased
 
+## [0.1.1] - 2018-02-27
 ### Security
 - updated rubocop dependency to `~> 0.51.0` per: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-8418 (@majormoses)
 
@@ -20,5 +21,6 @@ This CHANGELOG follows the format listed [here](https://github.com/sensu-plugins
 ### Breaking Changes
 - removed ruby 2.0 support (@majormoses)
 
-[Unreleased]: https://github.com/sensu-plugins/sensu-plugins-vsphere/compare/0.1.0...HEAD
+[Unreleased]: https://github.com/sensu-plugins/sensu-plugins-vsphere/compare/0.1.1...HEAD
+[0.1.1]: https://github.com/sensu-plugins/sensu-plugins-vsphere/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/sensu-plugins/sensu-plugins-vsphere/compare/ec87eef66e3c4f28f13072176c517dc02cd57aa4...0.1.0
