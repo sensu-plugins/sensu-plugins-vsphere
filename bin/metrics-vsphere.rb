@@ -106,19 +106,17 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Graphite
       unless result
         unknown "#{resources.first.class.to_s.gsub(/^.*::/, '')}(#{resource_name}) wasn't found. Available(#{resources.map(&:name)})"
       end
+    elsif resources.length == 1
+      result = resources.first
     else
-      if resources.length == 1
-        result = resources.first
-      else
-        if resources.first.is_a?(RbVmomi::VIM::ComputeResource)
-          unknown "please use  --compute_resource (#{resources.map(&:name)})"
-        end
-        if resources.first.is_a?(RbVmomi::VIM::HostSystem)
-          unknown "please use  --host_name (#{resources.map(&:name)})"
-        end
-        if resources.first.is_a?(RbVmomi::VIM::Datacenter)
-          unknown "please use  --data_center_name (#{resources.map(&:name)})"
-        end
+      if resources.first.is_a?(RbVmomi::VIM::ComputeResource)
+        unknown "please use  --compute_resource (#{resources.map(&:name)})"
+      end
+      if resources.first.is_a?(RbVmomi::VIM::HostSystem)
+        unknown "please use  --host_name (#{resources.map(&:name)})"
+      end
+      if resources.first.is_a?(RbVmomi::VIM::Datacenter)
+        unknown "please use  --data_center_name (#{resources.map(&:name)})"
       end
     end
     result
@@ -143,21 +141,24 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Graphite
       resource = host
     elsif config[:compute_resource] && compute_resource.is_a?(RbVmomi::VIM::ClusterComputeResource)
       resource = compute_resource
-    elsif
+    else
       resource = dc
     end
 
     regexp = Regexp.new("^#{config[:command_type]}")
+    stats_hash = {
+      multi_instance: true,
+      interval: config[:period],
+      start_time: (Time.now - config[:period])
+    }
     metrics = pm.retrieve_stats([resource],
                                 [],
-                                { multi_instance: true, interval: config[:period],
-                                  start_time: (Time.now - config[:period]) }
-    )
+                                stats_hash)
 
     if metrics
-      filtered_metrics = metrics[resource][:metrics].select{ |(metric, _), _| metric.to_s.match(regexp) && metric }
+      filtered_metrics = metrics[resource][:metrics].select { |(metric, _), _| metric.to_s.match(regexp) && metric }
       filtered_metrics.each do |(metric, instance), value|
-        output "#{config[:scheme]}.#{[instance, metric].flatten.select{|e| e != ''}.join('.')}", value.first
+        output "#{config[:scheme]}.#{[instance, metric].flatten.reject { |e| e == '' }.join('.')}", value.first
       end
 
       ok

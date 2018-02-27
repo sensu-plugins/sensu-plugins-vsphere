@@ -1,0 +1,34 @@
+language: ruby
+cache:
+- bundler
+install:
+- bundle install
+rvm:
+- 2.1
+- 2.2
+- 2.3.0
+- 2.4.1
+notifications:
+  email:
+    recipients:
+    - sensu-plugin@sensu-plugins.io
+    on_success: change
+    on_failure: always
+script:
+- gem build sensu-plugins-vsphere.gemspec
+- gem install sensu-plugins-vsphere-*.gem
+- bundle exec rake default
+deploy:
+  provider: rubygems
+  api_key:
+    secure: zC+VWu08KKHJiqA8ZFuj5ho0EoRv982mUviF6qIL6IsCdpoMEPBGNgQt+GvfmEQu3moFKRKBMCcDQpJtto11Ovpnx7DjUDZQ0GrFA/GihYsoM+UoeNqxTAu0TuK5dReIJz1D5fQ+SL6g5omhgtanUOWA6htuRu2DwsJNxcCHHJSimD7aq5vnDe0a1TqlPXDvBWBK2UtXj7Jhs7HZ99nwA86ItsoWhhA0AXFNoeVfirQ/+c9X7p8hiq26+D2XIcBg3sDUxYRtGXIb7tBQOtRgPJ61TyjZbJDLIMpvyRTSCUqkq+ER51FD/uShGSvaZ5hlGLHisvlWMdKASR9bdXfr4+UoO2dyl22Al+CLM8Ehf66XxpftSPIxx/6AHGnxS0eJ8TN3KFUHcLdKx8Ig1IiDMXlg38AfD2hbwxhdISUMVUp+IHu+KreemjsbeMINh1yiTmzd0PizqQtKbQIrrbwYjRMhizy/lHyMff9pnIYTta/hi/Cn5ZviqOhKiF7eQxr99HNm7VOVGnAke0uE2LvNvEorh3N6J1B/T5LspYveRceDcY2PT0oT9wWgwF4sAMCVlC2+A5qIpCE/kyM4IFK4d+lvTIQgaFv7v4msiBs1KtHj/WowlEM5G6mvbBLfGHBKCT4c+h+gFHuqLvPUFCbNrJP3cq/rPHAcdnDzCqSG72c=
+  gem: sensu-plugins-vsphere
+  on:
+    tags: true
+    all_branches: true
+    rvm:
+      - 2.1
+      - 2.2
+      - 2.3.0
+      - 2.4.1
+    repo: sensu-plugins/sensu-plugins-vsphere
