@@ -38,22 +38,11 @@ class ESXi_Check < Sensu::Plugin::Check::CLI
          boolean: true,
          default: false
 
-  option :org,
-         short: '-o ORG',
-         long: '--org ORG',
-         description: 'org in grafana'
-
-  option :kb,
-         short: '-k KB',
-         long: '--kb KB',
-         description: 'KB article to reference for issue'
-
   option :handlers,
          description: 'Comma separated list of handlers',
          long: '--handlers <HANDLER>',
          proc: proc { |s| s.split(',') },
          default: []
-
 
   option :help,
          short: '-h',
