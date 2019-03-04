@@ -9,8 +9,11 @@
 ## Functionality
 
 ## Files
-
+bin/vmware-host-health.rb
 ## Usage
+```
+vmware-host-health.rb -H https://<url to vcenter>/sdk -v true -u '<username with appropriate permissions>' -p 'sosecretpasswordnoonecanguess' --handlers metrics -k 562 -o 2 -d
+```
 
 ## Installation
 

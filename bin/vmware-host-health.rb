@@ -38,11 +38,6 @@ class ESXi_Check < Sensu::Plugin::Check::CLI
          boolean: true,
          default: false
 
-  option :exclude,
-         short: '-e EXCLUDE',
-         long: '--exclude EXCLUDE',
-         description: 'key value pair of excludes. host=dlqthor;host=dlqolaf'
-
   option :org,
          short: '-o ORG',
          long: '--org ORG',
@@ -98,8 +93,6 @@ class ESXi_Check < Sensu::Plugin::Check::CLI
       'output' => "#{self.class.name} WARNING: #{msg}",
       'handlers' => config[:handlers],
       'occurrences' => 2,
-      'KB' => "https://ww5.autotask.net/autotask/Knowledgebase/knowledgebase_view.aspx?isPopUp=1&objectID=#{config[:kb]}", 
-      'grafana_link' => "https://grafana.atomicdata.com/d/MxqCLP0mk/vmware-host?refresh=1m&orgId=#{config[:org]}&var-vcenter=#{u.host}&var-esxi=#{source}"
     }
     send_client_socket(event.to_json)
   end
@@ -113,9 +106,6 @@ class ESXi_Check < Sensu::Plugin::Check::CLI
       'output' => "#{self.class.name} CRITICAL: #{msg}",
       'handlers' => config[:handlers],
       'occurrences' => 2,
-      'KB' => "https://ww5.autotask.net/autotask/Knowledgebase/knowledgebase_view.aspx?isPopUp=1&objectID=#{config[:kb]}", 
-      'grafana_link' => "https://grafana.atomicdata.com/d/MxqCLP0mk/vmware-host?refresh=1m&orgId=#{config[:org]}&var-vcenter=#{u.host}&var-esxi=#{source}"
-      # var-clustername=615%20NVR01%20EVC
     }
     send_client_socket(event.to_json)
   end
