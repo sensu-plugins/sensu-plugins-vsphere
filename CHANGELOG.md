@@ -4,6 +4,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 This CHANGELOG follows the format listed [here](https://github.com/sensu-plugins/community/blob/master/HOW_WE_CHANGELOG.md)
 
 ## Unreleased
+### Changed
+- Update development requirement bundler from ~> 1.7 to ~> 2.1
+- Update development requirement codeclimate-test-reporter requirement from ~> 0.4 to ~> 1.0
+- Update development requirement rubocop requirement from ~> 0.51.0 to ~> 0.81.0
+- Update runtime requirement rbvmomi requirement from ~> 1.11.6 to >= 1.11.6, < 3.1.0
+
 ### Added
 - Initial Bonsai asset
 
