@@ -9,8 +9,12 @@
 ## Functionality
 
 ## Files
+bin/vmware-host-health.rb
 
 ## Usage
+```
+./vmware-host-health.rb -H https://<url to esxi vcenter>/sdk -v true -u '<coolusername>' -p '<sosecretcantguesspassword>' --handlers metrics -d
+```
 
 ## Installation
 

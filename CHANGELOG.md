@@ -16,6 +16,10 @@ This CHANGELOG follows the format listed [here](https://github.com/sensu-plugins
 ### Security
 - updated rubocop dependency to `~> 0.51.0` per: https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2017-8418 (@majormoses)
 
+## [0.1.2] - 2019-03-04
+### Added
+- Added a plugin to check alerts in ESXI from a host and datacenter Level (@xxwassyxx)
+
 ## [0.1.0] - 2018-02-26
 ### Added
 - Basic Skel (@majormoses)
