@@ -1,13 +1,16 @@
 language: ruby
+services: 
+- docker
 cache:
 - bundler
+before_install:
+- bash -c 'if [ command -v bundler ]; then bundle update --bundler; fi'
 install:
 - bundle install
 rvm:
-- 2.1
-- 2.2
 - 2.3.0
 - 2.4.1
+- 2.5.3
 notifications:
   email:
     recipients:
@@ -18,8 +21,17 @@ script:
 - gem build sensu-plugins-vsphere.gemspec
 - gem install sensu-plugins-vsphere-*.gem
 - bundle exec rake default
+before_deploy:
+- bash -c "[ ! -d bonsai/ ] && git clone https://github.com/sensu/sensu-go-bonsai-asset.git bonsai || echo 'bonsai/ exists, skipping git clone'"
 deploy:
-  provider: rubygems
+- provider: script
+  script: bonsai/ruby-runtime/travis-build-ruby-plugin-assets.sh sensu-plugins-vsphere
+  skip_cleanup: true
+  on:
+    tags: true
+    all_branches: true
+    rvm: 2.4.1
+- provider: rubygems
   api_key:
     secure: zC+VWu08KKHJiqA8ZFuj5ho0EoRv982mUviF6qIL6IsCdpoMEPBGNgQt+GvfmEQu3moFKRKBMCcDQpJtto11Ovpnx7DjUDZQ0GrFA/GihYsoM+UoeNqxTAu0TuK5dReIJz1D5fQ+SL6g5omhgtanUOWA6htuRu2DwsJNxcCHHJSimD7aq5vnDe0a1TqlPXDvBWBK2UtXj7Jhs7HZ99nwA86ItsoWhhA0AXFNoeVfirQ/+c9X7p8hiq26+D2XIcBg3sDUxYRtGXIb7tBQOtRgPJ61TyjZbJDLIMpvyRTSCUqkq+ER51FD/uShGSvaZ5hlGLHisvlWMdKASR9bdXfr4+UoO2dyl22Al+CLM8Ehf66XxpftSPIxx/6AHGnxS0eJ8TN3KFUHcLdKx8Ig1IiDMXlg38AfD2hbwxhdISUMVUp+IHu+KreemjsbeMINh1yiTmzd0PizqQtKbQIrrbwYjRMhizy/lHyMff9pnIYTta/hi/Cn5ZviqOhKiF7eQxr99HNm7VOVGnAke0uE2LvNvEorh3N6J1B/T5LspYveRceDcY2PT0oT9wWgwF4sAMCVlC2+A5qIpCE/kyM4IFK4d+lvTIQgaFv7v4msiBs1KtHj/WowlEM5G6mvbBLfGHBKCT4c+h+gFHuqLvPUFCbNrJP3cq/rPHAcdnDzCqSG72c=
   gem: sensu-plugins-vsphere

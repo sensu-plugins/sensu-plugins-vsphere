@@ -22,3 +22,7 @@ mkmf.log
 # test-kitchen
 .kitchen/
 .kitchen.list.yml
+
+# sensu assets
+bonsai/
+dist/

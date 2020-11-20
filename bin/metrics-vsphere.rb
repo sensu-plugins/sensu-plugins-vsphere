@@ -1,4 +1,6 @@
 #! /usr/bin/env ruby
+# frozen_string_literal: false
+
 #
 #   metrics-vsphere
 #
@@ -30,11 +32,16 @@ require 'rbvmomi'
 #
 # VSphere Graphite
 #
-class VsphereGraphite < Sensu::Plugin::Metric::CLI::Generic
+class VsphereGraphite < Sensu::Plugin::Metric::CLI::Graphite
   option :host,
          description: 'ESX or ESXi hostname',
          short: '-H HOST',
          long: '--host HOST'
+
+  option :port,
+         description: 'ESX or ESXi tcp port',
+         short: '-P PORT',
+         long: '--port PORT'
 
   option :user,
          description: 'Username to connect with',
@@ -97,6 +104,7 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Generic
   def vim
     @vim ||= RbVmomi::VIM.connect(
       host: config[:host],
+      port: config[:port],
       user: config[:user],
       password: config[:password],
       insecure: config[:insecure]
@@ -159,7 +167,6 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Generic
 
   def run
     data_centers = vim.serviceInstance.content.rootFolder.childEntity.grep(RbVmomi::VIM::Datacenter)
-
     if config[:find_resource]
       result = find_resource_by_name(build_tree_resources(data_centers), config[:find_resource])
       if result.empty?
@@ -179,7 +186,6 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Generic
         compute_resource = find_or_take_first(compute_resources, config[:compute_resource])
       end
       host = find_or_take_first(compute_resource.host, config[:host_name]) if config[:vm_name] || config[:host_name]
-
       if config[:vm_name]
         vms = host.vm.grep(RbVmomi::VIM::VirtualMachine)
         resource = find_or_take_first(vms, config[:vm_name])
@@ -196,7 +202,6 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Generic
                                   [],
                                   multi_instance: true, interval: config[:period],
                                   start_time: (Time.now - config[:period] * 10))
-
       if metrics
         timestamp = metrics[resource][:sampleInfo].first[:timestamp].to_i
         filtered_metrics = metrics[resource][:metrics].select { |(metric, _), _| metric.to_s.match(regexp) && metric }
@@ -207,7 +212,6 @@ class VsphereGraphite < Sensu::Plugin::Metric::CLI::Generic
             timestamp: timestamp
           )
         end
-
         ok
       else
         warning
