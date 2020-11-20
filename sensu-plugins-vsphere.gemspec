@@ -29,8 +29,8 @@ Gem::Specification.new do |s|
   s.test_files             = s.files.grep(%r{^(test|spec|features)/})
   s.version                = SensuPluginsVsphere::Version::VER_STRING
 
-  s.add_runtime_dependency 'rbvmomi',      '>= 1.11.6', '< 3.1.0'
-  s.add_runtime_dependency 'sensu-plugin', '>= 2.4', '< 4.1'
+  s.add_runtime_dependency 'rbvmomi', '>= 1.11.6', '< 3.1.0'
+  s.add_runtime_dependency 'sensu-plugin', '~> 4.0'
 
   s.add_development_dependency 'bundler',                   '~> 2.1'
   s.add_development_dependency 'codeclimate-test-reporter', '~> 1.0'
